@@ -1,0 +1,18 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+#analysis-results {
+    white-space: pre-wrap; /* 保留换行和空格 */
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 1.6;
+}

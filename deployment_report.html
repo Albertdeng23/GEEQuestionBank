@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考研智能题库 - 部署报告</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 960px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 2rem 1rem;
+            margin-bottom: 2rem;
+            border-radius: .3rem;
+        }
+        h2 {
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: .5rem;
+            margin-top: 2rem;
+        }
+        pre {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 1rem;
+            border-radius: .3rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }
+        .table th {
+            width: 25%;
+        }
+        .badge {
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <div class="header text-center">
+            <h1>考研智能题库部署报告</h1>
+            <p class="lead">版本: 1.0 | 日期: 2025-10-08</p>
+        </div>
+
+        <section id="overview">
+            <h2>1. 项目概述</h2>
+            <p>本项目是一个基于多模态大语言模型（VLM）的智能考研题库系统。它旨在自动化地将PDF格式的考研真题数字化，并提供一个Web界面，让用户可以通过上传题目图片来查找相似题目、分析考点以及生成新的练习题。</p>
+            <h5>核心功能：</h5>
+            <ul>
+                <li><strong>PDF自动化处理：</strong> 遍历指定目录下的所有PDF文件，将其中的题目内容提取并结构化为JSON格式。</li>
+                <li><strong>向量化与相似度搜索：</strong> 将题库中的所有题目文本转换为向量，并利用向量余弦相似度快速检索出与用户上传题目最相关的题目。</li>
+                <li><strong>AI智能分析：</strong> 利用VLM分析用户上传的题目，实时总结考点知识，并流式生成多道考点类似的全新题目。</li>
+                <li><strong>Web用户界面：</strong> 提供一个直观、易用的Web界面，支持图片上传、实时预览和结果展示，并能完美渲染LaTeX数学公式。</li>
+            </ul>
+        </section>
+
+        <section id="architecture">
+            <h2>2. 系统架构</h2>
+            <p>系统主要由三部分构成：<strong>离线数据处理管道</strong>、<strong>向量化脚本</strong> 和 <strong>在线Web应用服务</strong>。</p>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">架构流程</h5>
+                    <ol>
+                        <li><strong>数据处理 (<code>core.py</code>):</strong> 管理员将PDF真题文件放入 <code>/files</code> 目录。运行此脚本，它会将PDF渲染成图片，调用VLM API提取题目，生成结构化的 <code>processed_questions.json</code>。</li>
+                        <li><strong>向量生成 (<code>prepare_embeddings.py</code>):</strong> 运行此脚本，它会加载 <code>.json</code> 题库，使用Sentence Transformer模型将所有题目文本编码为向量，并保存为高效的 <code>db_embeddings.npy</code> 文件。</li>
+                        <li><strong>Web服务 (<code>app.py</code>):</strong> 启动Flask应用。应用在启动时会加载 <code>.json</code> 题库和 <code>.npy</code> 向量文件到内存中。</li>
+                        <li><strong>用户交互 (浏览器):</strong> 用户通过浏览器访问网页，上传题目图片。</li>
+                        <li><strong>后端处理:</strong> Flask后端接收图片，调用VLM API提取题目文本，将其编码为查询向量，在内存中与题库向量进行比对，找出最相似的题目返回给前端。对于分析功能，则直接调用VLM API进行实时分析和生成。</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <section id="prerequisites">
+            <h2>3. 环境与依赖</h2>
+            <h5>3.1 软件要求</h5>
+            <ul>
+                <li>Python 3.8+</li>
+                <li>pip (Python包管理器)</li>
+                <li>一个兼容OpenAI API的多模态模型服务商，并获取其 <strong>API Key</strong> 和 <strong>API URL</strong>。</li>
+            </ul>
+            <h5>3.2 项目结构</h5>
+            <pre><code>your_project_folder/
+├── app.py              # Flask Web服务器
+├── core.py             # 离线PDF处理脚本
+├── prepare_embeddings.py # 离线向量生成脚本
+├── .env                # 存储API密钥和URL
+├── requirements.txt    # 项目依赖
+├── files/              # 存放原始PDF真题文件
+├── result/             # 存放处理后的数据
+│   ├── processed_questions.json
+│   └── db_embeddings.npy
+├── static/             # 存放CSS和JS
+│   └── ...
+└── templates/          # 存放HTML模板
+    └── index.html
+</code></pre>
+            <h5>3.3 Python依赖库</h5>
+            <p>所有依赖项均在 <code>requirements.txt</code> 文件中定义。通过以下命令安装：</p>
+            <pre><code>pip install -r requirements.txt</code></pre>
+        </section>
+
+        <section id="deployment">
+            <h2>4. 部署步骤</h2>
+            <p>部署过程分为三个主要阶段：环境配置、离线数据准备和启动Web服务。</p>
+
+            <h5>阶段一：环境配置</h5>
+            <ol>
+                <li><strong>克隆或下载项目：</strong> 将所有项目文件放置到服务器的指定目录。</li>
+                <li>
+                    <strong>创建并激活虚拟环境 (推荐):</strong>
+                    <pre><code>python -m venv venv
+# Windows
+venv\Scripts\activate
+# Linux/macOS
+source venv/bin/activate</code></pre>
+                </li>
+                <li><strong>安装依赖：</strong> 运行 <code>pip install -r requirements.txt</code>。</li>
+                <li>
+                    <strong>配置环境变量：</strong> 创建 <code>.env</code> 文件，并填入您的API信息。
+                    <pre><code># .env
+API_URL="http://your-vlm-provider.com/v1"
+API_KEY="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"</code></pre>
+                    <div class="alert alert-warning mt-2"><strong>注意：</strong> <code>API_URL</code> 必须是符合OpenAI规范的API端点。</div>
+                </li>
+            </ol>
+
+            <h5>阶段二：离线数据准备 (一次性操作)</h5>
+            <div class="alert alert-info">此阶段需要在部署Web服务前完成。如果未来题库有更新，需要重新执行此阶段。</div>
+            <ol>
+                <li><strong>放置PDF文件：</strong> 将所有需要处理的PDF真题文件复制到 <code>/files</code> 目录下。</li>
+                <li>
+                    <strong>运行PDF处理脚本：</strong>
+                    <pre><code>python core.py</code></pre>
+                    <p class="mt-2">此过程会消耗较多时间和API额度。完成后，将在 <code>/result</code> 目录下生成 <code>processed_questions.json</code> 文件。</p>
+                </li>
+                <li>
+                    <strong>运行向量生成脚本：</strong>
+                    <pre><code>python prepare_embeddings.py</code></pre>
+                    <p class="mt-2">此脚本会下载预训练模型（首次运行较慢），并为题库生成向量。完成后，将在 <code>/result</code> 目录下生成 <code>db_embeddings.npy</code> 文件。</p>
+                </li>
+            </ol>
+
+            <h5>阶段三：启动Web应用服务</h5>
+            <h6>开发环境启动：</h6>
+            <p>用于本地测试和调试。</p>
+            <pre><code>python app.py</code></pre>
+            <p>服务将运行在 <code>http://127.0.0.1:5000</code>。</p>
+
+            <h6>生产环境部署 (推荐):</h6>
+            <p>在生产环境中，不应直接使用Flask的开发服务器。推荐使用WSGI服务器（如Gunicorn）和反向代理（如Nginx）。</p>
+            <ol>
+                <li>
+                    <strong>使用Gunicorn启动应用：</strong>
+                    <pre><code># 安装gunicorn
+pip install gunicorn
+
+# 启动服务 (例如，使用4个工作进程，绑定到8000端口)
+gunicorn --workers 4 --bind 0.0.0.0:8000 app:app</code></pre>
+                </li>
+                <li>
+                    <strong>配置Nginx反向代理 (可选但强烈推荐):</strong>
+                    <p>配置Nginx将外部的HTTP请求（通常是80端口）转发到Gunicorn运行的端口（8000）。这有助于负载均衡、SSL加密和静态文件的高效服务。</p>
+                </li>
+            </ol>
+        </section>
+
+        <section id="maintenance">
+            <h2>5. 维护与更新</h2>
+            <h5>更新题库</h5>
+            <ol>
+                <li>将新的PDF文件添加到 <code>/files</code> 目录。</li>
+                <li>运行 <code>python core.py</code>。脚本会自动跳过已处理的文件，只处理新文件。</li>
+                <li>运行 <code>python prepare_embeddings.py</code> 重新生成包含新题目的完整向量文件。</li>
+                <li>重启Gunicorn服务以加载新的数据。</li>
+            </ol>
+            <h5>日志与监控</h5>
+            <p>所有脚本和应用都配置了基础的日志记录。在生产环境中，应将日志输出到持久化文件，并使用监控工具来跟踪应用的健康状况和性能。</p>
+        </section>
+
+        <footer class="text-center text-muted mt-5 py-3 border-top">
+            <p>&copy; 2025 考研智能题库项目. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

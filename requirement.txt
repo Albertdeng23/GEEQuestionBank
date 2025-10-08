@@ -1,0 +1,8 @@
+openai
+python-dotenv
+PyMuPDF
+tqdm
+Flask
+sentence-transformers
+scikit-learn
+numpy

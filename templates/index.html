@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考研智能题库</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">考研智能题库</h1>
+
+        <!-- 导航选项卡 -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="similar-tab" data-bs-toggle="tab" data-bs-target="#similar-tab-pane" type="button" role="tab" aria-controls="similar-tab-pane" aria-selected="true">查找类似题目</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analyze-tab" data-bs-toggle="tab" data-bs-target="#analyze-tab-pane" type="button" role="tab" aria-controls="analyze-tab-pane" aria-selected="false">分析 & 生成题目</button>
+            </li>
+        </ul>
+
+        <!-- 选项卡内容 -->
+        <div class="tab-content" id="myTabContent">
+            <!-- 查找类似题目面板 -->
+            <div class="tab-pane fade show active" id="similar-tab-pane" role="tabpanel" aria-labelledby="similar-tab" tabindex="0">
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title">上传题目图片</h5>
+                        <p class="card-text">上传一张包含单个题目的图片，系统将在题库中查找最相似的题目。</p>
+                        <div class="mb-3">
+                            <input class="form-control" type="file" id="similar-image-upload" accept="image/*">
+                        </div>
+                        
+                        <!-- START: 新增图片预览区域 -->
+                        <div class="mt-3 text-center">
+                            <img id="similar-image-preview" src="#" alt="Image Preview" class="img-fluid rounded d-none" style="max-height: 300px; border: 1px solid #ddd; padding: 5px;">
+                        </div>
+                        <!-- END: 新增图片预览区域 -->
+
+                        <button class="btn btn-primary mt-3" id="btn-find-similar">开始查找</button>
+                        <div id="similar-spinner" class="spinner-border text-primary ms-3 d-none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="similar-results" class="mt-4"></div>
+            </div>
+
+            <!-- 分析 & 生成题目面板 -->
+            <div class="tab-pane fade" id="analyze-tab-pane" role="tabpanel" aria-labelledby="analyze-tab" tabindex="0">
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title">上传题目图片进行分析</h5>
+                        <p class="card-text">上传题目图片，系统将分析考点并生成3道类似的题目。</p>
+                        <div class="mb-3">
+                            <input class="form-control" type="file" id="analyze-image-upload" accept="image/*">
+                        </div>
+
+                        <!-- START: 新增图片预览区域 -->
+                        <div class="mt-3 text-center">
+                            <img id="analyze-image-preview" src="#" alt="Image Preview" class="img-fluid rounded d-none" style="max-height: 300px; border: 1px solid #ddd; padding: 5px;">
+                        </div>
+                        <!-- END: 新增图片预览区域 -->
+
+                        <button class="btn btn-success mt-3" id="btn-analyze">开始分析</button>
+                    </div>
+                </div>
+                <div id="analysis-results" class="mt-4 p-3 border rounded bg-light">
+                    <p class="text-muted">分析结果将在这里流式显示...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // 配置MathJax
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
