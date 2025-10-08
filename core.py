@@ -21,6 +21,7 @@ load_dotenv()
 # 从.env文件读取常量
 API_URL = os.getenv("API_URL")
 API_KEY = os.getenv("API_KEY")
+MODEL = os.getenv('AI_MODEL')
 
 # 定义目录常量
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -103,7 +104,7 @@ def call_vlm_api(image_base64: str, prompt: str) -> Optional[List[Dict]]:
     """调用VLM API并返回解析后的JSON数据。"""
     try:
         response = client.chat.completions.create(
-            model="gemini-2.5-flash-preview-05-20",  # 根据你的模型服务商提供的模型名称修改
+            model= MODEL,  # 根据你的模型服务商提供的模型名称修改
             messages=[
                 {
                     "role": "user",

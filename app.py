@@ -18,6 +18,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 load_dotenv()
 API_URL = os.getenv("API_URL")
 API_KEY = os.getenv("API_KEY")
+MODEL = os.getenv('AI_MODEL')
 RESULT_JSON_FILE = os.path.join("result", "processed_questions.json")
 
 app = Flask(__name__)
@@ -89,7 +90,7 @@ def extract_question_from_image(base64_image: str) -> str:
     """
     try:
         response = client.chat.completions.create(
-            model="gemini-2.5-flash-preview-05-20", # 根据你的模型服务商提供的模型名称修改
+            model= MODEL, # 根据你的模型服务商提供的模型名称修改
             messages=[{
                 "role": "user",
                 "content": [
@@ -187,7 +188,7 @@ def analyze_and_generate():
             yield "data: ### 考点分析\n\n"
             knowledge_prompt = f"你是一个资深考研数学老师。请分析以下题目，总结其中涉及的核心考点，并对每个考点做简要说明。请直接输出分析内容。\n\n题目：{question_text}"
             stream1 = client.chat.completions.create(
-                model="gemini-2.5-flash-preview-05-20",
+                model= MODEL,
                 messages=[{"role": "user", "content": knowledge_prompt}],
                 stream=True
             )
@@ -199,7 +200,7 @@ def analyze_and_generate():
             yield "\n\ndata: ---\n\n### 类似题目生成 (3道)\n\n"
             similar_prompt = f"你是一个考研数学出题专家。请根据以下题目，原创3道考点相似但题目内容和数字不同的题目，并给出答案。请使用LaTeX表示所有公式。\n\n原题：{question_text}"
             stream2 = client.chat.completions.create(
-                model="gemini-2.5-flash-preview-05-20",
+                model= MODEL,
                 messages=[{"role": "user", "content": similar_prompt}],
                 stream=True
             )
